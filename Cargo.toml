@@ -1,0 +1,38 @@
+[package]
+name = "firecrawl-cli"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Scrape pages, map sites, search the web, and manage Firecrawl agent jobs"
+
+[[bin]]
+name = "firecrawl"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.104"
+cli-command-kit = { path = "../cli-command-kit" }
+clap_complete = "4.6.11"
+firecrawl = "=2.21.5"
+humantime = "2.3"
+reqwest = { version = "0.12", features = ["rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3.27"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
+tokio-util = "0.7"
+url = "2.5"
+
+[dev-dependencies]
+tiny_http = "0.12"
+
+[patch.crates-io]
+firecrawl = { path = "vendor/firecrawl" }
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.release]
+strip = true
