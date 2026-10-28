@@ -33,5 +33,5 @@ status: current
 - Any runtime-result change requires a corresponding test-file change and at least 90% line coverage; `scripts/` is excluded. Record meaningful red/green and actual disabled/restored behavior under `.tmp/`.
 - Use local HTTP servers and isolated files for tests. Never use live API credentials or perform paid tasks as a verification shortcut.
 - Never publish releases, tags, packages, or production deployments without explicit user authorization.
-- Scope formatting to this project's explicit files; sibling path dependencies have separate owners.
+- Scope formatting to this project's explicit files; external Git dependencies have separate owners.
 - Keep standing project rules here, updating existing rules in place. Keep task history and verification results outside agent instructions.
