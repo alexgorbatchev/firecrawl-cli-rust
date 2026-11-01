@@ -5,11 +5,12 @@ use cli_command_kit::{
 };
 use std::time::Duration;
 
-pub const SKILL: &str = "Install the firecrawl skill using the Skills CLI:\n\n  npx skills add alexgorbatchev/firecrawl-cli --skill firecrawl\n\nSkill:\n\n  https://github.com/alexgorbatchev/firecrawl-cli/tree/main/skills/firecrawl\n";
-
 pub fn help_options() -> HelpOptions {
     HelpOptions {
-        skill: Some(SKILL.into()),
+        skill: Some(
+            cli_command_kit::SkillSource::new("alexgorbatchev/firecrawl-cli", "main")
+                .expect("the fixed skill source names a GitHub repository"),
+        ),
         ..Default::default()
     }
 }

@@ -82,7 +82,12 @@ pub async fn perform(
     mode: Mode,
     cancel: &CancellationToken,
 ) -> Result<()> {
-    if cli_command_kit::write_skill(matches, &args::help_options(), destination)? {
+    if cli_command_kit::write_skill(
+        &args::command(),
+        matches,
+        &args::help_options(),
+        destination,
+    )? {
         return Ok(());
     }
     if matches.get_flag("version") {
