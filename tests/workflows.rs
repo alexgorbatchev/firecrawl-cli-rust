@@ -178,7 +178,7 @@ async fn all_scrape_options_reach_native_http_and_timing_stays_off_json_stdout()
 
 #[tokio::test]
 async fn single_format_output_uses_the_requested_content_and_files_supply_native_options() {
-    let dir = tempfile::tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/.tmp")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
     let schema = dir.path().join("schema.json");
     let actions = dir.path().join("actions.json");
     std::fs::write(&schema, r#"{"type":"object"}"#).unwrap();
@@ -540,7 +540,7 @@ async fn agent_failures_cancel_and_timeout_have_truthful_outcomes() {
 
 #[tokio::test]
 async fn output_files_are_atomic_private_and_cancel_honors_output() {
-    let dir = tempfile::tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/.tmp")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("result.json");
     std::fs::write(&output, "old").unwrap();
     let fixture = Fixture::new(vec![(200, json!({"success":true}))]);
@@ -869,7 +869,7 @@ async fn metadata_and_input_validation_stay_offline_and_handle_output_failures()
 
 #[tokio::test]
 async fn input_files_are_validated_before_remote_work_and_existing_output_is_preserved() {
-    let dir = tempfile::tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/.tmp")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("input.json");
     for (flag, content) in [
         ("--schema-file", "[]"),
