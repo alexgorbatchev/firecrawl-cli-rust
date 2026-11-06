@@ -32,7 +32,6 @@ firecrawl = { path = "vendor/firecrawl" }
 
 [profile.dev]
 debug = 0
-incremental = false
 
 [profile.release]
 strip = true
