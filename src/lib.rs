@@ -32,6 +32,9 @@ pub async fn entry(
         .and_then(|matches| args::validate(&mut command, matches));
     let result: Result<()> = match parsed {
         Ok(matches) => runtime::perform(&matches, output, diagnostics, mode, cancel).await,
+        Err(error) if error.kind() == cli_command_kit::clap::error::ErrorKind::DisplayVersion => {
+            writeln!(output, "{}", env!("CARGO_PKG_VERSION")).map_err(Into::into)
+        }
         Err(error) if !error.use_stderr() => output
             .write_all(error.to_string().as_bytes())
             .map_err(Into::into),

@@ -4,7 +4,7 @@ description: Use when scraping a web page, mapping a website, searching web resu
 author: alexgorbatchev
 metadata:
   created_on: 2026-10-14 17:18
-  last_modified: 2026-10-14 17:38
+  last_modified: 2026-11-06 01:49
   status: current
 ---
 
@@ -14,7 +14,7 @@ Set `AGENT=1` for compact JSON results. Read the relevant reference before execu
 
 `firecrawl` displays the command tree. `firecrawl page`, `firecrawl site`, `firecrawl web`, and `firecrawl agent` require a verb. `firecrawl completion` requires a shell. `firecrawl help` prints root help; `firecrawl help help` describes the help interface.
 
-All commands accept `--help`/`-h`, which prints help without API access. The root `--version` (bool, default `false`) prints only `0.1.0` followed by one newline and accepts no other action. Other flags have no short aliases.
+All commands accept `--help`/`-h`, which prints help without API access. The root `--version` (bool flag, no value) prints only `0.1.0` followed by one newline. It returns immediately when encountered, without executing a trailing command. Version, help, skill, and completion output remain offline with valid inherited `FIRECRAWL_API_URL` and `FIRECRAWL_API_KEY` settings. Other flags have no short aliases.
 
 | Global flag | Type | Default | Contract |
 | :--- | :--- | :--- | :--- |

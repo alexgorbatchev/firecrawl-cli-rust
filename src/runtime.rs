@@ -90,10 +90,6 @@ pub async fn perform(
     )? {
         return Ok(());
     }
-    if matches.get_flag("version") {
-        writeln!(destination, "{}", env!("CARGO_PKG_VERSION"))?;
-        return Ok(());
-    }
     let (subject, group) = matches.subcommand().unwrap();
     let (verb, args) = group.subcommand().unwrap();
     if subject == "completion" {

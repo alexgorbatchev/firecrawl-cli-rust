@@ -651,7 +651,16 @@ async fn transport_failures_and_redirects_do_not_replay_mutations() {
         );
     });
     let result = run(
-        &["firecrawl", "--api-url", &url, "agent", "create", "Task"],
+        &[
+            "firecrawl",
+            "--api-url",
+            &url,
+            "--api-key",
+            "fixture-key",
+            "agent",
+            "create",
+            "Task",
+        ],
         Mode::Agent,
         &CancellationToken::new(),
     )
@@ -689,6 +698,8 @@ async fn deadlines_and_native_cancellation_stop_inflight_requests() {
                 "firecrawl",
                 "--api-url",
                 &url,
+                "--api-key",
+                "fixture-key",
                 "--request-timeout",
                 if cancel_request { "2s" } else { "20ms" },
                 "site",
@@ -716,6 +727,116 @@ async fn deadlines_and_native_cancellation_stop_inflight_requests() {
         .0,
         130
     );
+}
+
+fn isolated_cli() -> std::process::Command {
+    let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_firecrawl"));
+    for name in [
+        "BASH_ENV",
+        "FIRECRAWL_API_URL",
+        "FIRECRAWL_API_KEY",
+        "AGENT",
+    ] {
+        command.env_remove(name);
+    }
+    command
+}
+
+#[test]
+fn metadata_stays_offline_with_inherited_service_configuration() {
+    let server = tiny_http::Server::http("127.0.0.1:0").unwrap();
+    let url = format!("http://{}", server.server_addr());
+    for agent in [false, true] {
+        for (configured_url, configured_key) in
+            [(true, false), (false, false), (false, true), (true, true)]
+        {
+            for args in [
+                vec!["--version"],
+                vec!["--version", "page"],
+                vec!["--version", "site", "map", "https://example.com"],
+                vec!["--help"],
+                vec!["skill"],
+                vec!["completion", "bash"],
+            ] {
+                let mut command = isolated_cli();
+                if agent {
+                    command.env("AGENT", "1");
+                }
+                if configured_url {
+                    command.env("FIRECRAWL_API_URL", &url);
+                }
+                if configured_key {
+                    command.env("FIRECRAWL_API_KEY", "fixture-key");
+                }
+                if args.len() > 1 {
+                    command.args(["--request-timeout", "50ms"]);
+                }
+                let result = command.args(&args).output().unwrap();
+                assert!(result.status.success(), "{args:?}: {result:?}");
+                assert!(result.stderr.is_empty(), "{args:?}: {result:?}");
+                assert!(!result.stdout.is_empty(), "{args:?}");
+                if args[0] == "--version" {
+                    assert_eq!(result.stdout, b"0.1.0\n");
+                }
+                assert!(
+                    !String::from_utf8(result.stdout)
+                        .unwrap()
+                        .contains("fixture-key")
+                );
+                assert!(
+                    server.try_recv().unwrap().is_none(),
+                    "{args:?} used the API"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn service_commands_use_inherited_configuration_and_explicit_overrides() {
+    for override_environment in [false, true] {
+        let fixture = Fixture::new(vec![(
+            200,
+            json!({"success":true,"links":[{"url":"https://example.com"}]}),
+        )]);
+        let mut command = isolated_cli();
+        command
+            .env("AGENT", "1")
+            .env("FIRECRAWL_API_URL", &fixture.url)
+            .env("FIRECRAWL_API_KEY", "fixture-key");
+        if override_environment {
+            command
+                .env("FIRECRAWL_API_URL", "http://127.0.0.1:9")
+                .env("FIRECRAWL_API_KEY", "other-fixture-key")
+                .args(["--api-url", &fixture.url, "--api-key", "fixture-key"]);
+        }
+        let result = command
+            .args(["site", "map", "https://example.com"])
+            .output()
+            .unwrap();
+        let requests = fixture.worker.join();
+        assert!(
+            result.status.success(),
+            "override={override_environment}: {result:?}"
+        );
+        let requests = requests.unwrap();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].0, "POST");
+        assert_eq!(requests[0].1, "/v2/map");
+        let output: Value = serde_json::from_slice(&result.stdout).unwrap();
+        assert_eq!(output["links"][0]["url"], "https://example.com");
+    }
+    let result = isolated_cli()
+        .env("FIRECRAWL_API_URL", "ftp://example.com")
+        .env("FIRECRAWL_API_KEY", "fixture-key")
+        .args(["site", "map", "https://example.com"])
+        .output()
+        .unwrap();
+    assert!(!result.status.success());
+    assert!(result.stdout.is_empty());
+    let errors = String::from_utf8(result.stderr).unwrap();
+    assert!(errors.contains("--api-url"), "{errors}");
+    assert!(!errors.contains("fixture-key"));
 }
 
 struct Broken;
@@ -810,7 +931,6 @@ async fn metadata_and_input_validation_stay_offline_and_handle_output_failures()
             "Task",
             "--strict-constrain-to-urls",
         ],
-        vec!["firecrawl", "--version", "page"],
         vec!["firecrawl", "web", "search", "query", "--limit", "101"],
         vec![
             "firecrawl",

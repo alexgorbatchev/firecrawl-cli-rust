@@ -401,8 +401,10 @@ pub fn command() -> Command {
         );
     Command::new("firecrawl")
         .about("Read web pages and manage Firecrawl agent tasks")
+        .version(env!("CARGO_PKG_VERSION"))
+        .disable_version_flag(true)
         .arg_required_else_help(true)
-        .arg(flag("version", "Print the raw version").exclusive(true))
+        .arg(option("version", "Print the raw version").action(ArgAction::Version))
         .arg(
             option("api-key", "Firecrawl API key")
                 .global(true)
