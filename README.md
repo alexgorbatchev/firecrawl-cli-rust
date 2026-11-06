@@ -64,7 +64,7 @@ Global options apply to domain commands. Flags have no short alias unless listed
 | `--request-timeout <DURATION>` | — | `5m` | Positive client deadline per request. |
 | `--json` | — | `false` | Return JSON in human mode. |
 | `--help` | `-h` | `false` | Print current command help offline. |
-| `--version` | — | `false` | Print the raw version at the root; exclusive of other actions. |
+| `--version` | — | — | Print the raw version offline and return immediately when encountered; trailing commands are not executed. |
 
 `firecrawl page scrape <URL>`
 
